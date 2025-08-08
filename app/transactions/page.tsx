@@ -1,5 +1,4 @@
 "use client"
-import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 import { Worker } from 'html2pdf.js'
 import { transactions, filterTransactions } from "@/lib/data";
@@ -7,14 +6,11 @@ import { Transaction } from "@/types";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import SearchModal from "@/components/SearchModal";
-import Dashboard from "@/components/Dashboard";
 import TransactionsPage from "@/components/TransactionsPage";
-import EmptyState from "@/components/EmptyState";
+import { cn } from "@/lib/utils";
 
-export default function Home() {
+export default function TransactionsPageRoute() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activePage, setActivePage] = useState('dashboard');
-  const [activeTab, setActiveTab] = useState<'overview' | 'transactions'>('overview');
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(transactions);
@@ -37,12 +33,6 @@ export default function Home() {
       if (searchTerm) {
         const filtered = filterTransactions(transactions, searchTerm);
         setFilteredTransactions(filtered);
-        // Switch to transactions tab if on dashboard, or to transactions page if on other pages
-        if (activePage === 'dashboard') {
-          setActiveTab('transactions');
-        } else if (activePage !== 'transactions') {
-          setActivePage('transactions');
-        }
       } else {
         setFilteredTransactions(transactions);
       }
@@ -51,7 +41,7 @@ export default function Home() {
       setError('Error filtering transactions. Please try again.');
       console.error('Filtering error:', err);
     }
-  }, [searchTerm, activePage]);
+  }, [searchTerm]);
 
   const sharePDF = async () => {
     try {
@@ -78,8 +68,7 @@ export default function Home() {
   const handlePageChange = (page: string) => {
     // Navigate to the selected page
     if (page === 'dashboard') {
-      setActivePage('dashboard');
-      setSearchTerm("");
+      window.location.href = '/';
     } else if (page === 'transactions') {
       window.location.href = '/transactions';
     } else if (page === 'reports') {
@@ -88,35 +77,6 @@ export default function Home() {
       window.location.href = '/settings';
     }
   }
-
-  const renderPageContent = () => {
-    switch (activePage) {
-      case 'dashboard':
-        return (
-          <Dashboard 
-            transactions={filteredTransactions}
-            searchTerm={searchTerm}
-            onClearSearch={clearSearch}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-          />
-        );
-      case 'transactions':
-        return (
-          <TransactionsPage 
-            transactions={filteredTransactions}
-            searchTerm={searchTerm}
-            onClearSearch={clearSearch}
-          />
-        );
-      case 'reports':
-        return <EmptyState page="reports" />;
-      case 'settings':
-        return <EmptyState page="settings" />;
-      default:
-        return <EmptyState page="default" />;
-    }
-  };
 
   return (
     <div className="px-2 sm:px-4 max-w-[100vw]">
@@ -129,7 +89,7 @@ export default function Home() {
       <Sidebar 
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
-        activePage={activePage}
+        activePage="transactions"
         onPageChange={handlePageChange}
       />
 
@@ -139,38 +99,10 @@ export default function Home() {
           <div id="mainHeader" className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
-                <p className="text-4xl font-bold">
-                  {activePage === 'dashboard' && 'Wallet Ledger'}
-                  {activePage === 'transactions' && 'Transactions'}
-                  {activePage === 'reports' && 'Reports'}
-                  {activePage === 'settings' && 'Settings'}
-                </p>
+                <p className="text-4xl font-bold">Transactions</p>
               </div>
-
-              {activePage === 'dashboard' && (
-                <div className="rounded-2xl bg-[#34616F09] py-1 px-2 flex gap-2 items-center">
-                    <div className={`rounded-full w-1.5 h-1.5 bg-[#087A2E]`}></div>
-
-                  <p>Active</p>
-                </div>
-              )}
             </div>
           </div>
-
-          {/* User Info - Only show on dashboard */}
-          {activePage === 'dashboard' && (
-            <div className="flex items-center gap-3 mb-7">
-              <div className="flex items-center">
-                <img className="z-40" alt="profile 4" src={'/profile (4).png'} width={32} height={32} />
-                <img className="-ml-2 z-30" alt="profile 1" src={'/profile (1).png'} width={32} height={32} />
-                <img className="-ml-2 z-20" alt="profile 2" src={'/profile (2).png'} width={32} height={32} />
-                <img className="-ml-2 z-10" alt="profile 3" src={'/profile (3).png'} width={32} height={32} />
-              </div>
-              <div>
-                <p>Ava, Liam, Noah +12 others</p>
-              </div>
-            </div>
-          )}
 
           {/* Error Display */}
           {error && (
@@ -187,7 +119,11 @@ export default function Home() {
 
           {/* Page Content */}
           <div ref={ledger}>
-            {renderPageContent()}
+            <TransactionsPage 
+              transactions={filteredTransactions}
+              searchTerm={searchTerm}
+              onClearSearch={clearSearch}
+            />
           </div>
         </div>
       </main>

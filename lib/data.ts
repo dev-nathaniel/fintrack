@@ -1,11 +1,4 @@
-export interface Transaction {
-  id: string;
-  date: string;
-  remark: string;
-  amount: number;
-  currency: string;
-  type: 'Credit' | 'Debit';
-}
+import { Transaction, SortField, SortOrder } from "@/types";
 
 export const transactions: Transaction[] = [
   {
@@ -169,9 +162,6 @@ export const transactions: Transaction[] = [
     type: 'Credit'
   }
 ];
-
-export type SortField = 'date' | 'remark' | 'amount' | 'currency' | 'type';
-export type SortOrder = 'asc' | 'desc';
 
 export const sortTransactions = (
   transactions: Transaction[],

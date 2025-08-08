@@ -1,7 +1,8 @@
 "use client"
 import { Search, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import { Transaction, filterTransactions } from "@/lib/data";
+import { Transaction } from "@/types";
+import { filterTransactions } from "@/lib/data";
 
 interface SearchModalProps {
   isOpen: boolean;
