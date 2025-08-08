@@ -2,16 +2,24 @@
 import { cn } from "@/lib/utils";
 import { Grid3X3, Menu, MoreHorizontal, Search, X } from "lucide-react";
 import Image from "next/image";
-import { useRef, useState } from "react";
-import html2pdf from 'html2pdf.js'
+import { useEffect, useRef, useState } from "react";
+import {Worker} from 'html2pdf.js'
 
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const ledger = useRef<HTMLDivElement>(null)
+  const [html2PdfWorker, setHtml2PdfWorker] = useState<Worker>()
+
+  useEffect(() => {
+    // Import inside useEffect so it only runs in the browser
+    import("html2pdf.js").then((html2pdf) => {
+      setHtml2PdfWorker(html2pdf.default())
+    });
+  }, []);
 
   const sharePDF = async () => {
     if (ledger.current) {
-    html2pdf(ledger.current)      
+    html2PdfWorker?.from(ledger.current).saveAs('ledger')      
     }
   }
   return (
