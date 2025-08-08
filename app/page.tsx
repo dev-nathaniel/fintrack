@@ -239,7 +239,7 @@ export default function Home() {
           <div id="mainHeader" className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
-                <p className="text-4xl font-bold">
+                <p className="text-2xl md:text-3xl lg:text-4xl font-bold">
                   {activePage === 'dashboard' && 'Wallet Ledger'}
                   {activePage === 'transactions' && 'Transactions'}
                   {activePage === 'reports' && 'Reports'}
