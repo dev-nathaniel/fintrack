@@ -3,16 +3,16 @@ import { cn } from "@/lib/utils";
 import { Grid3X3, Menu, MoreHorizontal, Search, X } from "lucide-react";
 import Image from "next/image";
 import { useRef, useState } from "react";
-import html2pdf from 'html2pdf.js'
+// import html2pdf from 'html2pdf.js'
 
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const ledger = useRef<HTMLDivElement>(null)
 
   const sharePDF = async () => {
-    if (ledger.current) {
-    html2pdf(ledger.current)      
-    }
+  //   if (ledger.current) {
+  //   html2pdf(ledger.current)      
+  //   }
   }
   return (
     <div className="px-2 sm:px-4 max-w-[100vw]">
