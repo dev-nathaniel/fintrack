@@ -1,103 +1,230 @@
+"use client"
+import { cn } from "@/lib/utils";
+import { Grid3X3, Menu, MoreHorizontal, Search, X } from "lucide-react";
 import Image from "next/image";
+import { useRef, useState } from "react";
+import html2pdf from 'html2pdf.js'
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const ledger = useRef<HTMLDivElement>(null)
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const sharePDF = async () => {
+    if (ledger.current) {
+    html2pdf(ledger.current)      
+    }
+  }
+  return (
+    <div className="px-2 sm:px-4 max-w-[100vw]">
+      <div className="flex justify-between z-50 py-3 sticky top-0 bg-white">
+        <div className="flex items-center gap-4 sm:gap-7">
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="cursor-pointer ">
+            <Menu className="w-6 h-6" />
+          </button>
+
+          <Image width={112} height={112} src={'/logo.png'} alt="logo" />
+        </div>
+
+        <div className="flex items-center gap-4 sm:gap-7">
+          <Search className="w-5 h-5 text-gray-600" />
+          <Grid3X3 className="w-5 h-5 text-gray-600" />
+          <div>
+            <Image width={40} height={40} src={'/profile.png'} alt="profile" />
+          </div>
+        </div>
+      </div>
+
+      <main className="flex w-full py-7 gap-12">
+        <div id="sidebar" className={cn("lg:w-56 hidden lg:flex lg:flex-col lg:fixed", sidebarOpen ? "lg:w-56" : "lg:hidden")}>
+          <div className="py-2 px-4 rounded-2xl bg-[#38677616]">
+            <p className="text-[#3A6C7B]">Dashboard</p>
+          </div>
+
+          <div className="py-2 px-4 rounded-2xl">
+            <p className="text-[#3A6C7B]">Transactions</p>
+          </div>
+
+          <div className="py-2 px-4 rounded-2xl">
+            <p className="text-[#3A6C7B]">Reports</p>
+          </div>
+
+          <div className="py-2 px-4 rounded-2xl">
+            <p className="text-[#3A6C7B]">Settings</p>
+          </div>
+        </div>
+
+        <div id="mobileSidebar" className={cn("lg:hidden pr-2 sm:pr-4 fixed top-0 bottom-0 bg-white z-50 w-56", sidebarOpen ? "translate-x-0" : "-translate-x-[200%]")}>
+          <div className="py-4 sticky top-0 bg-white">
+            <div className="flex items-center justify-between">
+
+
+              <Image width={112} height={112} src={'/logo.png'} alt="logo" />
+
+              <button onClick={() => setSidebarOpen(!sidebarOpen)} className="cursor-pointer">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+          <div className="py-7">
+          <div className="py-2 px-4 rounded-2xl bg-[#38677616]">
+            <p className="text-[#3A6C7B]">Dashboard</p>
+          </div>
+
+          <div className="py-2 px-4 rounded-2xl">
+            <p className="text-[#3A6C7B]">Transactions</p>
+          </div>
+
+          <div className="py-2 px-4 rounded-2xl">
+            <p className="text-[#3A6C7B]">Reports</p>
+          </div>
+
+          <div className="py-2 px-4 rounded-2xl">
+            <p className="text-[#3A6C7B]">Settings</p>
+          </div>
+          </div>
+        </div>
+
+        <div id="mainBody" className={cn("flex-5/6 lg:pl-64", sidebarOpen ? "lg:pl-64" : "lg:pl-0")}>
+          <div id="mainHeader" className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1">
+                <p className="text-4xl font-bold">Wallet Ledger</p>
+              </div>
+
+              <div className="rounded-2xl bg-[#34616F09] py-1 px-2 gap-2">
+                <p>Active</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div onClick={sharePDF} className="bg-[#4B8B9F] hidden sm:flex cursor-pointer rounded-2xl py-2 px-4">
+                <p>Share</p>
+              </div>
+
+              <div className="border border-[#49656E] rounded-2xl p-2">
+                <MoreHorizontal className="w-5 h-5 text-gray-600" />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 mt-7">
+            <div className="flex items-center">
+              <Image className="z-40" alt="profile 4" src={'/profile (4).png'} width={32} height={32} />
+              <Image className="-ml-2 z-30" alt="profile 1" src={'/profile (1).png'} width={32} height={32} />
+              <Image className="-ml-2 z-20" alt="profile 2" src={'/profile (2).png'} width={32} height={32} />
+              <Image className="-ml-2 z-10" alt="profile 3" src={'/profile (3).png'} width={32} height={32} />
+            </div>
+
+            <div>
+              <p>Ava, Liam, Noah +12 others</p>
+            </div>
+          </div>
+
+          <div ref={ledger}>
+            <div className="border-b-2 border-[#49656E20] flex my-7">
+              <div className="py-3 px-7 border-b-2 border-[#4B8B9F]">
+                <p>Overview</p>
+              </div>
+
+              <div className="py-3 px-7">
+                <p>Transactions</p>
+              </div>
+            </div>
+
+            <div className="py-3 flex flex-col gap-4">
+              <div>
+                <p>Summary</p>
+              </div>
+
+              <div className={cn("grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-7 items-center", sidebarOpen ? "lg:grid-cols-3" : "lg:grid-cols-4")}>
+                <div className="p-7 flex-1 rounded-2xl bg-[#34616F09]">
+                  <div className="flex justify-between mb-4">
+                    <p>Total Balance</p>
+                    <MoreHorizontal />
+                  </div>
+
+                  <div className="mb-1">
+                    <p className="font-bold text-3xl">$12,345</p>
+                  </div>
+
+                  <div>
+                    <p>+5%</p>
+                  </div>
+                </div>
+
+                <div className="p-7 flex-1 rounded-2xl bg-[#34616F09]">
+                  <div className="flex justify-between mb-4">
+                    <p>Total Balance</p>
+                    <MoreHorizontal />
+                  </div>
+
+                  <div className="mb-1">
+                    <p className="font-bold text-3xl">$12,345</p>
+                  </div>
+
+                  <div>
+                    <p>+5%</p>
+                  </div>
+                </div>
+
+                <div className="p-7 flex-1 rounded-2xl bg-[#34616F09]">
+                  <div className="flex justify-between mb-4">
+                    <p>Total Balance</p>
+                    <MoreHorizontal />
+                  </div>
+
+                  <div className="mb-1">
+                    <p className="font-bold text-3xl">$12,345</p>
+                  </div>
+
+                  <div>
+                    <p>+5%</p>
+                  </div>
+                </div>
+
+                <div className="p-7 flex-1 rounded-2xl bg-[#34616F09]">
+                  <div className="flex justify-between mb-4">
+                    <p>Total Balance</p>
+                    <MoreHorizontal />
+                  </div>
+
+                  <div className="mb-1">
+                    <p className="font-bold text-3xl">$12,345</p>
+                  </div>
+
+                  <div>
+                    <p>+5%</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="py-7 overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="py-1">
+                    <th className="w-1/2 text-left">Date</th>
+                    <th className="text-left">Remark</th>
+                    <th className="text-left">Amount</th>
+                    <th className="text-left">Currency</th>
+                    <th className="text-left">Type</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr>
+                    <td className="text-left py-4">2023-10-01</td>
+                    <td className="text-left">Salary</td>
+                    <td className="text-left">$3000</td>
+                    <td className="text-left">USD</td>
+                    <td className="text-left">Credit</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
