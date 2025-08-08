@@ -1,7 +1,11 @@
 "use client"
-import { Transaction, SummaryData } from "@/types";
+import { useState } from "react";
+import { Transaction, SummaryData, ErrorState, LoadingState } from "@/types";
 import { MoreHorizontal } from "lucide-react";
 import TransactionTable from "./TransactionTable";
+import { safeFormatAmount, validateTransactions, createErrorState } from "@/lib/errorHandling";
+import ErrorDisplay from "./ErrorDisplay";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface DashboardProps {
   transactions: Transaction[];
@@ -18,28 +22,44 @@ export default function Dashboard({
   activeTab, 
   onTabChange 
 }: DashboardProps) {
+  const [error, setError] = useState<ErrorState | null>(null);
+  const [loading, setLoading] = useState<LoadingState>({ isLoading: false });
+
   const calculateSummary = (): SummaryData => {
-    const totalBalance = transactions.reduce((sum, t) => sum + t.amount, 0);
-    const totalIncome = transactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
-    const totalExpenses = Math.abs(transactions.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0));
-    const transactionCount = transactions.length;
-    
-    return { totalBalance, totalIncome, totalExpenses, transactionCount };
+    try {
+      // Validate transactions before calculating
+      const validation = validateTransactions(transactions);
+      if (!validation.isValid) {
+        throw new Error(`Data validation failed: ${validation.errors.map(e => e.message).join(', ')}`);
+      }
+
+      const totalBalance = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+      const totalIncome = transactions.filter(t => (t.amount || 0) > 0).reduce((sum, t) => sum + (t.amount || 0), 0);
+      const totalExpenses = Math.abs(transactions.filter(t => (t.amount || 0) < 0).reduce((sum, t) => sum + (t.amount || 0), 0));
+      const transactionCount = transactions.length;
+      
+      return { totalBalance, totalIncome, totalExpenses, transactionCount };
+    } catch (err) {
+      setError(createErrorState(err, () => {
+        setError(null);
+        return calculateSummary();
+      }));
+      return { totalBalance: 0, totalIncome: 0, totalExpenses: 0, transactionCount: 0 };
+    }
   };
 
   const summary = calculateSummary();
 
-  const formatAmount = (amount: number) => {
-    return amount.toLocaleString('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-  };
-
   return (
     <div className="w-full">
+      <LoadingSpinner loading={loading} />
+      
+      {error && (
+        <div className="mb-6">
+          <ErrorDisplay error={error} />
+        </div>
+      )}
+
       {/* Tab Navigation */}
       <div className="border-b-2 border-[#49656E20] flex mb-7">
         <button 
@@ -47,7 +67,7 @@ export default function Dashboard({
           className={`py-3 px-7 transition-colors cursor-pointer ${
             activeTab === 'overview' 
               ? "border-b-2 border-[#4B8B9F] text-[#4B8B9F]" 
-              : "text-gray-600 hover:text-gray-800"
+              : "text-[#4a5565] hover:text-[#1e2939]"
           }`}
         >
           <p>Overview</p>
@@ -58,7 +78,7 @@ export default function Dashboard({
           className={`py-3 px-7 transition-colors cursor-pointer ${
             activeTab === 'transactions' 
               ? "border-b-2 border-[#4B8B9F] text-[#4B8B9F]" 
-              : "text-gray-600 hover:text-gray-800"
+              : "text-[#4a5565] hover:text-[#1e2939]"
           }`}
         >
           <p>Transactions</p>
@@ -70,7 +90,7 @@ export default function Dashboard({
           {/* Summary Section */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">Summary</h2>
+              <h2 className="text-xl font-semibold text-[#101828]">Summary</h2>
               {searchTerm && (
                 <button 
                   onClick={onClearSearch}
@@ -88,10 +108,10 @@ export default function Dashboard({
                   <MoreHorizontal />
                 </div>
                 <div className="mb-1">
-                  <p className="font-bold text-3xl">{formatAmount(summary.totalBalance)}</p>
+                  <p className="font-bold text-3xl">{safeFormatAmount(summary.totalBalance)}</p>
                 </div>
                 <div>
-                  <p className={summary.totalBalance >= 0 ? "text-green-600" : "text-red-600"}>
+                  <p className={summary.totalBalance >= 0 ? "text-[#05df72]" : "text-[#fb2c36]"}>
                     {summary.totalBalance >= 0 ? "+" : ""}{((summary.totalBalance / 10000) * 100).toFixed(1)}%
                   </p>
                 </div>
@@ -103,10 +123,10 @@ export default function Dashboard({
                   <MoreHorizontal />
                 </div>
                 <div className="mb-1">
-                  <p className="font-bold text-3xl text-green-600">{formatAmount(summary.totalIncome)}</p>
+                  <p className="font-bold text-3xl text-[#05df72]">{safeFormatAmount(summary.totalIncome)}</p>
                 </div>
                 <div>
-                  <p className="text-green-600">+{((summary.totalIncome / 10000) * 100).toFixed(1)}%</p>
+                  <p className="text-[#05df72]">+{((summary.totalIncome / 10000) * 100).toFixed(1)}%</p>
                 </div>
               </div>
 
@@ -116,10 +136,10 @@ export default function Dashboard({
                   <MoreHorizontal />
                 </div>
                 <div className="mb-1">
-                  <p className="font-bold text-3xl text-red-600">{formatAmount(summary.totalExpenses)}</p>
+                  <p className="font-bold text-3xl text-[#fb2c36]">{safeFormatAmount(summary.totalExpenses)}</p>
                 </div>
                 <div>
-                  <p className="text-red-600">-{((summary.totalExpenses / 10000) * 100).toFixed(1)}%</p>
+                  <p className="text-[#fb2c36]">-{((summary.totalExpenses / 10000) * 100).toFixed(1)}%</p>
                 </div>
               </div>
 
@@ -140,7 +160,7 @@ export default function Dashboard({
 
           {/* Recent Transactions */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Transactions</h3>
+            <h3 className="text-lg font-semibold text-[#101828] mb-4">Recent Transactions</h3>
             <TransactionTable
               transactions={transactions}
               showAllData={false}
@@ -156,8 +176,8 @@ export default function Dashboard({
           {/* Transactions Tab Content */}
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">All Transactions</h2>
-              <p className="text-gray-600 mt-1">
+              <h2 className="text-xl font-semibold text-[#101828]">All Transactions</h2>
+              <p className="text-[#4a5565] mt-1">
                 {searchTerm 
                   ? `Showing ${transactions.length} results for "${searchTerm}"`
                   : `Total ${transactions.length} transactions`

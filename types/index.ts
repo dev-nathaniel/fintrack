@@ -23,6 +23,17 @@ export interface SummaryData {
   transactionCount: number;
 }
 
+export interface DashboardSummary {
+  totalBalance: number;
+  totalCredits: number;
+  totalDebits: number;
+  transactionCount: number;
+  balanceChange: number;
+  creditsChange: number;
+  debitsChange: number;
+  transactionChange: number;
+}
+
 export interface SearchState {
   searchTerm: string;
   isSearching: boolean;
@@ -47,4 +58,40 @@ export interface DropdownOption {
   icon?: string;
   onClick: () => void;
   disabled?: boolean;
+}
+
+// Error Handling Types
+export interface ErrorState {
+  message: string;
+  type: 'error' | 'warning' | 'info';
+  code?: string;
+  retry?: () => void;
+  dismiss?: () => void;
+}
+
+export interface LoadingState {
+  isLoading: boolean;
+  message?: string;
+  progress?: number;
+}
+
+export interface ValidationError {
+  field: string;
+  message: string;
+  value?: any;
+}
+
+export interface DataValidationResult {
+  isValid: boolean;
+  errors: ValidationError[];
+  warnings: ValidationError[];
+}
+
+// Responsive breakpoint types
+export type Breakpoint = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+
+export interface ResponsiveConfig {
+  breakpoint: Breakpoint;
+  minWidth: number;
+  maxWidth?: number;
 }

@@ -80,48 +80,84 @@ export const sortTransactions = (
   field: SortField,
   order: SortOrder
 ): Transaction[] => {
-  return [...transactions].sort((a, b) => {
-    let aValue: any = a[field];
-    let bValue: any = b[field];
-
-    // Handle amount field specially (numeric sorting)
-    if (field === 'amount') {
-      aValue = Math.abs(aValue);
-      bValue = Math.abs(bValue);
+  try {
+    if (!Array.isArray(transactions)) {
+      throw new Error('Transactions must be an array');
     }
 
-    // Handle date field
-    if (field === 'date') {
-      aValue = new Date(aValue).getTime();
-      bValue = new Date(bValue).getTime();
-    }
+    return [...transactions].sort((a, b) => {
+      let aValue: any = a[field];
+      let bValue: any = b[field];
 
-    // Handle string fields
-    if (typeof aValue === 'string') {
-      aValue = aValue.toLowerCase();
-      bValue = bValue.toLowerCase();
-    }
+      // Handle null/undefined values
+      if (aValue == null) aValue = '';
+      if (bValue == null) bValue = '';
 
-    if (order === 'asc') {
-      return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
-    } else {
-      return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
-    }
-  });
+      // Handle amount field specially (numeric sorting)
+      if (field === 'amount') {
+        aValue = Math.abs(Number(aValue) || 0);
+        bValue = Math.abs(Number(bValue) || 0);
+      }
+
+      // Handle date field
+      if (field === 'date') {
+        const dateA = new Date(aValue);
+        const dateB = new Date(bValue);
+        
+        if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+          throw new Error('Invalid date format in transactions');
+        }
+        
+        aValue = dateA.getTime();
+        bValue = dateB.getTime();
+      }
+
+      // Handle string fields
+      if (typeof aValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+
+      if (order === 'asc') {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+      }
+    });
+  } catch (error) {
+    console.error('Error sorting transactions:', error);
+    throw new Error(`Failed to sort transactions: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 };
 
 export const filterTransactions = (
   transactions: Transaction[],
   searchTerm: string
 ): Transaction[] => {
-  if (!searchTerm.trim()) return transactions;
-  
-  const term = searchTerm.toLowerCase();
-  return transactions.filter(transaction =>
-    transaction.remark.toLowerCase().includes(term) ||
-    transaction.currency.toLowerCase().includes(term) ||
-    transaction.type.toLowerCase().includes(term) ||
-    transaction.date.includes(term) ||
-    transaction.amount.toString().includes(term)
-  );
+  try {
+    if (!Array.isArray(transactions)) {
+      throw new Error('Transactions must be an array');
+    }
+
+    if (!searchTerm.trim()) return transactions;
+    
+    const term = searchTerm.toLowerCase();
+    return transactions.filter(transaction => {
+      try {
+        return (
+          (transaction.remark || '').toLowerCase().includes(term) ||
+          (transaction.currency || '').toLowerCase().includes(term) ||
+          (transaction.type || '').toLowerCase().includes(term) ||
+          (transaction.date || '').includes(term) ||
+          (transaction.amount?.toString() || '').includes(term)
+        );
+      } catch (error) {
+        console.warn('Error filtering transaction:', transaction, error);
+        return false;
+      }
+    });
+  } catch (error) {
+    console.error('Error filtering transactions:', error);
+    throw new Error(`Failed to filter transactions: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 };

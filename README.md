@@ -5,7 +5,7 @@ A modern, responsive financial tracking application built with Next.js, TypeScri
 ## Features
 
 ### 🎯 Core Functionality
-- **Transaction Management**: View and manage financial transactions with detailed information
+- **Transaction Management**: View financial transactions
 - **Real-time Summary**: Dynamic calculation of total balance, income, expenses, and transaction count
 - **PDF Export**: Generate and download transaction ledgers as PDF files
 - **Responsive Design**: Optimized for desktop, tablet, and mobile devices
@@ -29,9 +29,15 @@ A modern, responsive financial tracking application built with Next.js, TypeScri
 - **Error Handling**: Comprehensive error handling with user-friendly messages
 
 ### 🛡️ Error Handling
+- **Comprehensive Error Boundaries**: React ErrorBoundary catches and handles component errors gracefully
+- **Data Validation**: Robust validation of transaction data with detailed error reporting
+- **Loading States**: Visual feedback during data processing, sorting, and PDF generation
+- **Empty States**: Contextual empty state messages for different scenarios (no data, no search results, etc.)
+- **Retry Mechanisms**: Automatic retry functionality for failed operations
+- **Responsive Error Messages**: Error messages adapt to screen size for better mobile experience
+- **Safe Data Formatting**: Protected formatting functions that handle invalid data gracefully
 - **Graceful Degradation**: Application continues to work even if some features fail
 - **User-friendly Messages**: Clear error messages with recovery options
-- **Try Again Functionality**: Easy retry mechanisms for failed operations
 - **Console Logging**: Detailed error logging for debugging
 
 ## Data Structure
@@ -59,21 +65,36 @@ The application includes 20 sample transactions covering various financial activ
 ## Technical Implementation
 
 ### Components
-- **TransactionTable**: Reusable table component with sorting functionality
-- **SearchModal**: Modal component for global search with real-time results
+- **TransactionTable**: Reusable table component with sorting functionality and comprehensive error handling
+- **SearchModal**: Modal component for global search with real-time results and validation
+- **Dashboard**: Main dashboard component with summary calculations and tab navigation
+- **ErrorBoundary**: React error boundary for catching and handling component errors
+- **ErrorDisplay**: Consistent error display component with retry functionality
+- **LoadingSpinner**: Loading indicator with progress tracking
+- **EmptyState**: Contextual empty state component for different scenarios
+- **Header**: Application header with navigation and search functionality
+- **Sidebar**: Navigation sidebar with responsive design
 - **Main Page**: Orchestrates all functionality and state management
 
 ### Key Functions
-- **sortTransactions**: Handles multi-field sorting with proper type handling
-- **filterTransactions**: Performs text-based filtering across all fields
-- **calculateSummary**: Computes real-time financial summaries
-- **sharePDF**: Generates and downloads PDF reports
+- **sortTransactions**: Handles multi-field sorting with proper type handling and error validation
+- **filterTransactions**: Performs text-based filtering across all fields with data validation
+- **calculateSummary**: Computes real-time financial summaries with error handling
+- **sharePDF**: Generates and downloads PDF reports with progress tracking
+- **validateTransactions**: Comprehensive data validation for transaction integrity
+- **safeFormatAmount**: Protected amount formatting that handles invalid numbers
+- **safeFormatDate**: Protected date formatting that handles invalid dates
+- **createErrorState**: Creates standardized error states with retry functionality
+- **withRetry**: Retry mechanism for failed operations with exponential backoff
 
 ### State Management
 - **Active Tab**: Tracks current view (overview/transactions)
 - **Search State**: Manages search terms and filtered results
 - **Sort State**: Maintains current sort field and direction
-- **Error State**: Handles and displays error messages
+- **Error State**: Handles and displays error messages with retry functionality
+- **Loading State**: Manages loading indicators and progress tracking
+- **Validation State**: Tracks data validation results and warnings
+- **Responsive State**: Manages responsive breakpoints and mobile detection
 
 ## Getting Started
 
@@ -113,18 +134,23 @@ The application includes 20 sample transactions covering various financial activ
 
 ## Error Recovery
 
-If you encounter errors:
-1. **Try Again**: Click the "Try again" button in error messages
-2. **Clear Search**: Use "Clear search" to reset filters
-3. **Refresh**: Reload the page if persistent issues occur
-4. **Check Console**: Developer tools show detailed error information
+The application includes comprehensive error handling to ensure a smooth user experience:
 
-## Browser Compatibility
+### Error Types and Recovery
+1. **Data Validation Errors**: Invalid transaction data is caught and reported with specific field information
+2. **Network Errors**: Failed API calls or PDF generation include retry mechanisms
+3. **Component Errors**: React ErrorBoundary catches and displays user-friendly error messages
+4. **Loading Errors**: Progress tracking shows when operations are in progress
 
-- Chrome/Chromium (recommended)
-- Firefox
-- Safari
-- Edge
+### Recovery Actions
+1. **Try Again**: Click the "Try Again" button in error messages for automatic retry
+2. **Dismiss**: Close error messages that don't require immediate action
+3. **Refresh Page**: Reload the page to reset the application state
+4. **Clear Search**: If search results are causing issues, clear the search
+5. **Check Console**: Open browser developer tools to view detailed error logs
+
+
+
 
 ## Dependencies
 

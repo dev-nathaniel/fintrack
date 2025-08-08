@@ -1,9 +1,13 @@
 "use client"
-import { Transaction, SortField, SortOrder, PaginationState } from "@/types";
+import { Transaction, SortField, SortOrder, PaginationState, LoadingState, ErrorState } from "@/types";
 import { sortTransactions } from "@/data/data";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { safeFormatAmount, safeFormatDate, validateTransactions, createErrorState } from "@/lib/errorHandling";
+import LoadingSpinner from "./LoadingSpinner";
+import ErrorDisplay from "./ErrorDisplay";
+import EmptyState from "./EmptyState";
 
 interface TransactionTableProps {
   transactions: Transaction[];
@@ -22,7 +26,8 @@ export default function TransactionTable({
 }: TransactionTableProps) {
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ErrorState | null>(null);
+  const [loading, setLoading] = useState<LoadingState>({ isLoading: false });
   const [pagination, setPagination] = useState<PaginationState>({
     currentPage: 1,
     itemsPerPage: showPagination ? 10 : transactions.length,
@@ -31,6 +36,8 @@ export default function TransactionTable({
 
   const handleSort = (field: SortField) => {
     try {
+      setLoading({ isLoading: true, message: 'Sorting data...' });
+      
       if (sortField === field) {
         setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
       } else {
@@ -39,16 +46,27 @@ export default function TransactionTable({
       }
       setError(null);
     } catch (err) {
-      setError('Error sorting transactions. Please try again.');
+      setError(createErrorState(err, () => handleSort(field)));
       console.error('Sorting error:', err);
+    } finally {
+      setLoading({ isLoading: false });
     }
   };
 
   const getSortedTransactions = () => {
     try {
+      // Validate transactions before processing
+      const validation = validateTransactions(transactions);
+      if (!validation.isValid) {
+        throw new Error(`Data validation failed: ${validation.errors.map(e => e.message).join(', ')}`);
+      }
+      
       return sortTransactions(transactions, sortField, sortOrder);
     } catch (err) {
-      setError('Error processing transactions. Please try again.');
+      setError(createErrorState(err, () => {
+        setError(null);
+        return getSortedTransactions();
+      }));
       console.error('Sorting error:', err);
       return transactions;
     }
@@ -77,13 +95,18 @@ export default function TransactionTable({
     }));
   };
 
-  const formatAmount = (amount: number) => {
-    const formatted = Math.abs(amount).toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-    return amount >= 0 ? `$${formatted}` : `-$${formatted}`;
-  };
+  // Check for empty transactions
+  if (!transactions || transactions.length === 0) {
+    return (
+      <div className="py-7">
+        <EmptyState 
+          page="transactions" 
+          context="transactions"
+          showAction={false}
+        />
+      </div>
+    );
+  }
 
   const getSortIcon = (field: SortField) => {
     if (sortField !== field) {
@@ -104,21 +127,18 @@ export default function TransactionTable({
   if (error) {
     return (
       <div className="py-7">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800">{error}</p>
-          <button 
-            onClick={() => setError(null)}
-            className="mt-2 text-red-600 hover:text-red-800 underline"
-          >
-            Try again
-          </button>
-        </div>
+        <ErrorDisplay 
+          error={error} 
+          dismissible={true}
+        />
       </div>
     );
   }
 
   return (
     <div>
+      <LoadingSpinner loading={loading} />
+      
       <div className={cn("pt-7 pb-3 overflow-x-auto", activeTab === 'transactions' ? "py-3": "")}>
         <table className="w-full min-w-[600px] border-separate border-spacing-x-3">
           <thead>
@@ -175,19 +195,15 @@ export default function TransactionTable({
             {displayTransactions.map((transaction) => (
               <tr key={transaction.id} className="hover:bg-[#f9fafb] transition-colors">
                 <td className="text-left py-4 border-b border-[#49656E20]">
-                  {new Date(transaction.date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit'
-                  })}
+                  {safeFormatDate(transaction.date)}
                 </td>
                 <td className="text-left py-4 border-b border-[#49656E20]">
-                  {transaction.remark}
+                  {transaction.remark || 'No remark'}
                 </td>
                 <td className={`text-left py-4 border-b border-[#49656E20] ${
                   transaction.amount >= 0 ? 'text-[#05df72]' : 'text-[#fb2c36]'
                 }`}>
-                  {formatAmount(transaction.amount)}
+                  {safeFormatAmount(transaction.amount)}
                 </td>
                 <td className="text-left py-4 border-b border-[#49656E20]">
                   {transaction.currency}
@@ -208,11 +224,11 @@ export default function TransactionTable({
       {showPagination && showAllData && (
         <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Show:</span>
+            <span className="text-sm text-[#4a5565]">Show:</span>
             <select
               value={pagination.itemsPerPage}
               onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-              className="border border-gray-300 rounded px-2 py-1 text-sm"
+              className="border border-[#d1d5dc] rounded px-2 py-1 text-sm"
             >
               {itemsPerPageOptions.map(option => (
                 <option key={option} value={option}>
@@ -220,26 +236,26 @@ export default function TransactionTable({
                 </option>
               ))}
             </select>
-            <span className="text-sm text-gray-600">per page</span>
+            <span className="text-sm text-[#4a5565]">per page</span>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={() => handlePageChange(pagination.currentPage - 1)}
               disabled={pagination.currentPage === 1}
-              className="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-2 rounded hover:bg-[#f3f4f6] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-[#4a5565">
               Page {pagination.currentPage} of {totalPages}
             </span>
             
             <button
               onClick={() => handlePageChange(pagination.currentPage + 1)}
               disabled={pagination.currentPage === totalPages}
-              className="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-2 rounded hover:bg-[#f3f4f6] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

@@ -1,8 +1,11 @@
 "use client"
 import { Search, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import { Transaction } from "@/types";
+import { Transaction, ErrorState, LoadingState } from "@/types";
 import { filterTransactions } from "@/data/data";
+import { safeFormatAmount, safeFormatDate, validateTransactions, createErrorState } from "@/lib/errorHandling";
+import ErrorDisplay from "./ErrorDisplay";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -14,7 +17,8 @@ interface SearchModalProps {
 export default function SearchModal({ isOpen, onClose, onSearch, transactions }: SearchModalProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ErrorState | null>(null);
+  const [loading, setLoading] = useState<LoadingState>({ isLoading: false });
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -25,12 +29,27 @@ export default function SearchModal({ isOpen, onClose, onSearch, transactions }:
 
   useEffect(() => {
     try {
+      setLoading({ isLoading: true, message: 'Searching...' });
+      
+      // Validate transactions before filtering
+      const validation = validateTransactions(transactions);
+      if (!validation.isValid) {
+        throw new Error(`Data validation failed: ${validation.errors.map(e => e.message).join(', ')}`);
+      }
+      
       const filtered = filterTransactions(transactions, searchTerm);
       setFilteredTransactions(filtered);
       setError(null);
     } catch (err) {
-      setError('Error filtering transactions. Please try again.');
+      setError(createErrorState(err, () => {
+        setError(null);
+        // Retry the search
+        const filtered = filterTransactions(transactions, searchTerm);
+        setFilteredTransactions(filtered);
+      }));
       console.error('Filtering error:', err);
+    } finally {
+      setLoading({ isLoading: false });
     }
   }, [searchTerm, transactions]);
 
@@ -84,11 +103,11 @@ export default function SearchModal({ isOpen, onClose, onSearch, transactions }:
         </div>
 
         <div className="overflow-y-auto max-h-[60vh]">
+          <LoadingSpinner loading={loading} />
+          
           {error ? (
             <div className="p-4">
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-red-800">{error}</p>
-              </div>
+              <ErrorDisplay error={error} />
             </div>
           ) : searchTerm ? (
             <div>

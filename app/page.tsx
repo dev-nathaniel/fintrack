@@ -3,14 +3,18 @@ import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 import { Worker } from 'html2pdf.js'
 import { transactions, filterTransactions } from "@/data/data";
-import { DropdownOption, Transaction } from "@/types";
+import { DropdownOption, Transaction, ErrorState, LoadingState } from "@/types";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
 import SearchModal from "@/components/SearchModal";
 import Dashboard from "@/components/Dashboard";
 import TransactionsPage from "@/components/TransactionsPage";
 import EmptyState from "@/components/EmptyState";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import ErrorDisplay from "@/components/ErrorDisplay";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { Grid3X3, MoreHorizontal, Share } from "lucide-react";
+import { validateTransactions, createErrorState, withRetry } from "@/lib/errorHandling";
 
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -19,7 +23,8 @@ export default function Home() {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>(transactions);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ErrorState | null>(null);
+  const [loading, setLoading] = useState<LoadingState>({ isLoading: false });
   const ledger = useRef<HTMLDivElement>(null);
   const [html2PdfWorker, setHtml2PdfWorker] = useState<Worker>();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -81,16 +86,34 @@ export default function Home() {
 
   useEffect(() => {
     // Import inside useEffect so it only runs in the browser
+    setLoading({ isLoading: true, message: 'Loading PDF generation...' });
+    
     import("html2pdf.js").then((html2pdf) => {
-      setHtml2PdfWorker(html2pdf.default())
+      setHtml2PdfWorker(html2pdf.default());
+      setLoading({ isLoading: false });
     }).catch((err) => {
-      setError('Failed to load PDF generation. Please try again.');
+      setError(createErrorState(err, () => {
+        setError(null);
+        // Retry PDF loading
+        import("html2pdf.js").then((html2pdf) => {
+          setHtml2PdfWorker(html2pdf.default());
+        });
+      }));
+      setLoading({ isLoading: false });
       console.error('PDF worker error:', err);
     });
   }, []);
 
   useEffect(() => {
     try {
+      setLoading({ isLoading: true, message: 'Filtering transactions...' });
+      
+      // Validate transactions before filtering
+      const validation = validateTransactions(transactions);
+      if (!validation.isValid) {
+        throw new Error(`Data validation failed: ${validation.errors.map(e => e.message).join(', ')}`);
+      }
+      
       if (searchTerm) {
         const filtered = filterTransactions(transactions, searchTerm);
         setFilteredTransactions(filtered);
@@ -105,21 +128,37 @@ export default function Home() {
       }
       setError(null);
     } catch (err) {
-      setError('Error filtering transactions. Please try again.');
+      setError(createErrorState(err, () => {
+        setError(null);
+        // Retry filtering
+        const filtered = filterTransactions(transactions, searchTerm);
+        setFilteredTransactions(filtered);
+      }));
       console.error('Filtering error:', err);
+    } finally {
+      setLoading({ isLoading: false });
     }
   }, [searchTerm, activePage]);
 
   const sharePDF = async () => {
     try {
+      setLoading({ isLoading: true, message: 'Generating PDF...', progress: 0 });
+      
       if (ledger.current && html2PdfWorker) {
+        setLoading(prev => ({ ...prev, progress: 50 }));
         await html2PdfWorker.from(ledger.current).saveAs('ledger');
+        setLoading(prev => ({ ...prev, progress: 100 }));
       } else {
         throw new Error('PDF generation not available');
       }
     } catch (err) {
-      setError('Failed to generate PDF. Please try again.');
+      setError(createErrorState(err, () => {
+        setError(null);
+        sharePDF();
+      }));
       console.error('PDF generation error:', err);
+    } finally {
+      setLoading({ isLoading: false });
     }
   }
 
@@ -176,13 +215,16 @@ export default function Home() {
   };
 
   return (
-    <div className="px-2 sm:px-4 max-w-[100vw]">
-      <Header
-        onMenuClick={() => setSidebarOpen(!sidebarOpen)}
-        onSearchClick={() => setSearchModalOpen(true)}
-        onShareClick={sharePDF}
-        activePage="dashboard"
-      />
+    <ErrorBoundary>
+      <div className="px-2 sm:px-4 max-w-[100vw]">
+        <LoadingSpinner loading={loading} />
+        
+        <Header
+          onMenuClick={() => setSidebarOpen(!sidebarOpen)}
+          onSearchClick={() => setSearchModalOpen(true)}
+          onShareClick={sharePDF}
+          activePage="dashboard"
+        />
 
       <Sidebar
         isOpen={sidebarOpen}
@@ -263,14 +305,8 @@ export default function Home() {
 
           {/* Error Display */}
           {error && (
-            <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-800">{error}</p>
-              <button
-                onClick={() => setError(null)}
-                className="mt-2 text-red-600 hover:text-red-800 underline"
-              >
-                Dismiss
-              </button>
+            <div className="mb-4">
+              <ErrorDisplay error={error} />
             </div>
           )}
 
@@ -281,12 +317,13 @@ export default function Home() {
         </div>
       </main>
 
-      <SearchModal
-        isOpen={searchModalOpen}
-        onClose={() => setSearchModalOpen(false)}
-        onSearch={handleSearch}
-        transactions={transactions}
-      />
-    </div>
+        <SearchModal
+          isOpen={searchModalOpen}
+          onClose={() => setSearchModalOpen(false)}
+          onSearch={handleSearch}
+          transactions={transactions}
+        />
+      </div>
+    </ErrorBoundary>
   );
 }
