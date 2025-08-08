@@ -27,6 +27,7 @@ export default function ReportsPage() {
         onMenuClick={() => setSidebarOpen(!sidebarOpen)}
         onSearchClick={() => {}}
         onShareClick={() => {}}
+        activePage="reports"
       />
 
       <Sidebar 

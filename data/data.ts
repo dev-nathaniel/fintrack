@@ -28,138 +28,50 @@ export const transactions: Transaction[] = [
   {
     id: '4',
     date: '2023-10-04',
-    remark: 'Freelance Project',
-    amount: 1000,
+    remark: 'Dinner',
+    amount: -40,
     currency: 'USD',
-    type: 'Credit'
+    type: 'Debit'
   },
   {
     id: '5',
     date: '2023-10-05',
-    remark: 'Restaurant',
-    amount: -75,
-    currency: 'USD',
-    type: 'Debit'
-  },
-  {
-    id: '6',
-    date: '2023-10-06',
-    remark: 'Gas Station',
-    amount: -45,
-    currency: 'USD',
-    type: 'Debit'
-  },
-  {
-    id: '7',
-    date: '2023-10-07',
-    remark: 'Online Shopping',
-    amount: -200,
-    currency: 'USD',
-    type: 'Debit'
-  },
-  {
-    id: '8',
-    date: '2023-10-08',
-    remark: 'Consulting Fee',
-    amount: 2500,
-    currency: 'USD',
-    type: 'Credit'
-  },
-  {
-    id: '9',
-    date: '2023-10-09',
     remark: 'Movie Tickets',
     amount: -30,
     currency: 'USD',
     type: 'Debit'
   },
   {
-    id: '10',
-    date: '2023-10-10',
-    remark: 'Coffee Shop',
-    amount: -12,
+    id: '6',
+    date: '2023-10-06',
+    remark: 'Rent',
+    amount: -1200,
     currency: 'USD',
     type: 'Debit'
   },
   {
-    id: '11',
-    date: '2023-10-11',
-    remark: 'Book Purchase',
-    amount: -25,
+    id: '7',
+    date: '2023-10-07',
+    remark: 'Utilities',
+    amount: -100,
     currency: 'USD',
     type: 'Debit'
   },
   {
-    id: '12',
-    date: '2023-10-12',
-    remark: 'Investment Dividend',
-    amount: 150,
-    currency: 'USD',
-    type: 'Credit'
-  },
-  {
-    id: '13',
-    date: '2023-10-13',
-    remark: 'Pharmacy',
-    amount: -35,
+    id: '8',
+    date: '2023-10-08',
+    remark: 'Car Payment',
+    amount: -400,
     currency: 'USD',
     type: 'Debit'
   },
   {
-    id: '14',
-    date: '2023-10-14',
-    remark: 'Haircut',
-    amount: -40,
+    id: '9',
+    date: '2023-10-09',
+    remark: 'Insurance',
+    amount: -200,
     currency: 'USD',
     type: 'Debit'
-  },
-  {
-    id: '15',
-    date: '2023-10-15',
-    remark: 'Side Gig',
-    amount: 800,
-    currency: 'USD',
-    type: 'Credit'
-  },
-  {
-    id: '16',
-    date: '2023-10-16',
-    remark: 'Electric Bill',
-    amount: -120,
-    currency: 'USD',
-    type: 'Debit'
-  },
-  {
-    id: '17',
-    date: '2023-10-17',
-    remark: 'Internet Bill',
-    amount: -80,
-    currency: 'USD',
-    type: 'Debit'
-  },
-  {
-    id: '18',
-    date: '2023-10-18',
-    remark: 'Gift Purchase',
-    amount: -60,
-    currency: 'USD',
-    type: 'Debit'
-  },
-  {
-    id: '19',
-    date: '2023-10-19',
-    remark: 'Car Maintenance',
-    amount: -300,
-    currency: 'USD',
-    type: 'Debit'
-  },
-  {
-    id: '20',
-    date: '2023-10-20',
-    remark: 'Bonus',
-    amount: 1500,
-    currency: 'USD',
-    type: 'Credit'
   }
 ];
 

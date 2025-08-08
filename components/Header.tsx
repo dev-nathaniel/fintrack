@@ -8,9 +8,10 @@ interface HeaderProps {
   onMenuClick: () => void;
   onSearchClick: () => void;
   onShareClick: () => void;
+  activePage: 'transactions' | 'settings' | 'reports' | 'dashboard'
 }
 
-export default function Header({ onMenuClick, onSearchClick, onShareClick }: HeaderProps) {
+export default function Header({ onMenuClick, onSearchClick, onShareClick, activePage }: HeaderProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -92,7 +93,7 @@ export default function Header({ onMenuClick, onSearchClick, onShareClick }: Hea
             <Image width={40} height={40} src={'/profile.png'} alt="profile" />
           </div>
 
-          <div className="relative" ref={dropdownRef}>
+          <div className={`relative cursor-pointer ${activePage === 'transactions' ? 'flex' : 'hidden'}`} ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="border border-[#49656E] rounded-2xl p-2 hover:bg-gray-50 transition-colors"

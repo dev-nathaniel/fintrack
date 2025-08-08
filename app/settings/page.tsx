@@ -27,6 +27,7 @@ export default function SettingsPage() {
         onMenuClick={() => setSidebarOpen(!sidebarOpen)}
         onSearchClick={() => {}}
         onShareClick={() => {}}
+        activePage="settings"
       />
 
       <Sidebar 

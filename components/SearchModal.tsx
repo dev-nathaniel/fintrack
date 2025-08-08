@@ -2,7 +2,7 @@
 import { Search, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Transaction } from "@/types";
-import { filterTransactions } from "@/lib/data";
+import { filterTransactions } from "@/data/data";
 
 interface SearchModalProps {
   isOpen: boolean;

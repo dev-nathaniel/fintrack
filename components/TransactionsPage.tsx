@@ -1,6 +1,6 @@
 "use client"
 import { Transaction } from "@/types";
-import { filterTransactions } from "@/lib/data";
+import { filterTransactions } from "@/data/data";
 import TransactionTable from "./TransactionTable";
 import { Search, X } from "lucide-react";
 

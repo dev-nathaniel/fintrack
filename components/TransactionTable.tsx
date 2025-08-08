@@ -1,6 +1,6 @@
 "use client"
 import { Transaction, SortField, SortOrder, PaginationState } from "@/types";
-import { sortTransactions } from "@/lib/data";
+import { sortTransactions } from "@/data/data";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -192,8 +192,8 @@ export default function TransactionTable({
                 <td className="text-left py-4 border-b border-[#49656E20]">
                   {transaction.currency}
                 </td>
-                <td className="text-left py-4 border-b border-[#49656E20] items-start self-start">
-                  <div className={`px-2 py-1 rounded-2xl bg-[#34616F09] font-medium self-start flex gap-2 items-center`}>
+                <td className="text-left py-4 border-b border-[#49656E20]">
+                  <div className={`px-2 py-1 rounded-2xl bg-[#34616F09] font-medium inline-flex gap-2 items-center`}>
                     <div className={`rounded-full w-1.5 h-1.5 ${transaction.type === 'Credit' ? 'bg-[#087A2E]' : 'bg-[#C6381B]'}`}></div>
                     <p>{transaction.type}</p>
                   </div>

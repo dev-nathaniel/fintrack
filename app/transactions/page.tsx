@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useRef, useState } from "react";
 import { Worker } from 'html2pdf.js'
-import { transactions, filterTransactions } from "@/lib/data";
+import { transactions, filterTransactions } from "@/data/data";
 import { Transaction } from "@/types";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
@@ -84,6 +84,7 @@ export default function TransactionsPageRoute() {
         onMenuClick={() => setSidebarOpen(!sidebarOpen)}
         onSearchClick={() => setSearchModalOpen(true)}
         onShareClick={sharePDF}
+        activePage="transactions"
       />
 
       <Sidebar 

@@ -44,7 +44,7 @@ export default function Dashboard({
       <div className="border-b-2 border-[#49656E20] flex mb-7">
         <button 
           onClick={() => onTabChange('overview')}
-          className={`py-3 px-7 transition-colors ${
+          className={`py-3 px-7 transition-colors cursor-pointer ${
             activeTab === 'overview' 
               ? "border-b-2 border-[#4B8B9F] text-[#4B8B9F]" 
               : "text-gray-600 hover:text-gray-800"
@@ -55,7 +55,7 @@ export default function Dashboard({
 
         <button 
           onClick={() => onTabChange('transactions')}
-          className={`py-3 px-7 transition-colors ${
+          className={`py-3 px-7 transition-colors cursor-pointer ${
             activeTab === 'transactions' 
               ? "border-b-2 border-[#4B8B9F] text-[#4B8B9F]" 
               : "text-gray-600 hover:text-gray-800"
